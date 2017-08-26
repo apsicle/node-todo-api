@@ -24,8 +24,9 @@ app.post('/todos', (req, res) => {
 });
 
 app.get('/todos', (req, res) => {
+	// find() returns a COLLECTION of documents. I.e. an array of obects.
 	Todo.find().then((docs) => {
-		res.send({docs});
+		res.send({docs: docs});
 	}, (err) => {
 		res.status(400).send(err);
 	});

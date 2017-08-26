@@ -4,8 +4,12 @@ const expect = require('expect');
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
+const todos = [{text: 'first test kalappa'}, {text: 'kafljklfawjefklwjf'}, {text: 'krappa'}];
+
 beforeEach((done) => {
-	Todo.remove({}).then(() => done());
+	Todo.remove({}).then(() => {
+		Todo.insertMany(todos).then(() => done());
+	});
 });
 
 describe('POST /todos', () => {
@@ -23,7 +27,7 @@ describe('POST /todos', () => {
 					return done(err);
 				} 
 
-				Todo.find().then((todos) => {
+				Todo.find({text}).then((todos) => {
 					expect(todos.length).toBe(1);
 					expect(todos[0].text).toBe(text);
 					done();
@@ -43,9 +47,24 @@ describe('POST /todos', () => {
 				}
 
 				Todo.find().then((todos) => {
-					expect(todos.length).toBe(0);
+					expect(todos.length).toBe(3);
 					done()
 				}).catch((e) => done(e));
+			});
+	});
+
+	it('Should GET all todos', (done) => {
+		var text;
+		supertest(app)
+			.get('/todos')
+			.expect(200)
+			.end((err, res) => {
+				if (err) {
+					return done(err);
+				}
+
+				expect(res.body.docs.length).toBe(3);
+				done();
 			});
 	});
 });
