@@ -8,6 +8,9 @@
     "test-watch": "nodemon --exec \"npm test\"",
     "start": "node server/server.js"
   },
+  "engines": {
+    "node": "8.4.0"
+  },
   "author": "Ryan Yan",
   "license": "ISC",
   "dependencies": {
