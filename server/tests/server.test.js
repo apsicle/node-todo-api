@@ -65,7 +65,7 @@ describe('POST /todos', () => {
 					return done(err);
 				}
 
-				expect(res.body.docs.length).toBe(3);
+				expect(res.body.todos.length).toBe(3);
 				done();
 			});
 	});

@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 // wait until the connection is made). mongoose just handles all that in the background.
 
 mongoose.Promise = global.Promise;
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
 
 module.exports.mongoose = mongoose;

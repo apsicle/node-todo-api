@@ -18,8 +18,8 @@ app.post('/todos', (req, res) => {
 		text: req.body.text
 	});
 
-	todo.save().then((doc) => {
-		res.send(doc);
+	todo.save().then((todo) => {
+		res.send(todo);
 	}, (err) => {
 		res.status(400).send(err);
 	});
@@ -27,8 +27,8 @@ app.post('/todos', (req, res) => {
 
 app.get('/todos', (req, res) => {
 	// find() returns a COLLECTION of documents. I.e. an array of obects.
-	Todo.find().then((docs) => {
-		res.send({docs: docs});
+	Todo.find().then((todos) => {
+		res.send({todos});
 	}, (err) => {
 		res.status(400).send(err);
 	});
@@ -39,7 +39,7 @@ app.get('/todos/:id', (req, res) => {
 	var id = req.params.id;
 	// Validate id, send 404 if not valid.
 	if (!ObjectID.isValid(id)) {
-		return res.status(404).send();
+		return res.status(400).send();
 	};
 
 	Todo.findById(req.params.id).then((todo) => {
@@ -54,7 +54,26 @@ app.get('/todos/:id', (req, res) => {
 
 	}).catch((err) => {
 		// If there's another error for some reason, catch it here.
-		return res.send(err);
+		return res.status(400).send(err);
+	});
+});
+
+app.delete('/todos/:id', (req, res) => {
+	var id = req.params.id;
+
+	// Validate id, send 404 if not valid.
+	if (!ObjectID.isValid(id)) {
+		return res.status(400).send();
+	};
+
+	Todo.findByIdAndRemove(id).then((todo) => {
+		if (!todo) {
+			return res.status(404).send('Could not find todo by that id');
+		}
+
+		res.send({todo});
+	}).catch((err) => {
+		return res.status(400).send(err);
 	});
 });
 
