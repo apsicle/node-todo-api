@@ -1,3 +1,14 @@
+var env = process.env.NODE_ENV || 'development';
+console.log('env *****', env);
+
+if (env === 'development') {
+	process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
+	process.env.PORT = 3000;
+} else if (env === 'test') {
+	process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
+	process.env.PORT = 3000;
+}
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
@@ -8,7 +19,7 @@ var {User} = require('./models/user.js');
 var {Todo} = require('./models/todo.js');
 
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000; // this default of 3000 is no longer needed here but keeping for learning's sake.
 
 // bodyParser... passes key-value pairs from the post request into request.body. Q: why
 // isn't this done automatically by express?

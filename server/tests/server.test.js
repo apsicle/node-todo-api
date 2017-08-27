@@ -6,7 +6,8 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 const randoID = new ObjectID();
-const todos = [{text: 'first test kalappa', _id: randoID}, {text: 'kafljklfawjefklwjf'}, {text: 'krappa'}];
+const randoID2 = new ObjectID();
+const todos = [{text: 'first test kalappa', _id: randoID}, {text: 'kafljklfawjefklwjf', _id: randoID2, completed: true, completedAt: 333}, {text: 'krappa'}];
 
 beforeEach((done) => {
 	Todo.remove({}).then(() => {
@@ -143,8 +144,59 @@ describe('DELETE /todos/:id', () => {
 		var id = 123;
 
 		supertest(app)
-			.delete('/todos/${id}')
+			.delete(`/todos/${id}`)
 			.expect(400)
 			.end(done);
 	});
+});
+
+describe('PATCH todos/:id', () => {
+	it('Should update the todo text property and completed from false to true', (done) => {
+		var id = randoID.toHexString();
+		var testText = 'Update the todo text prop and completed from false to true'
+
+		supertest(app)
+			.patch(`/todos/${id}`)
+			.send({text: testText, completed: true})
+			.expect(200)
+			.expect((res) => {
+				expect(res.body.todo.text).toBe(testText);
+				expect(res.body.todo.completed).toBe(true);
+				expect(res.body.todo.completedAt).toBeA('number');
+			})
+			.end(done);
+		// grab id of first item
+		//make patch request
+		// send to send some data with request body
+		// update the text to whatever
+		// set completed === true
+		// make assertions
+		// basic: 200 status
+		// custom: verify that the response body has a text property === to text sent in
+		// verify that completed is true
+		// verify that completed at is a number.
+	})
+
+	it('Should clear completedAt when todo is not completed.', (done) => {
+		var id = randoID2.toHexString();
+		var testText = 'Clear completedAt when todo is not completed';
+
+		supertest(app)
+			.patch(`/todos/${id}`)
+			.send({text: testText, completed: false})
+			.expect(200)
+			.expect((res) => {
+				expect(res.body.todo.text).toBe(testText);
+				expect(res.body.todo.completed).toBe(false);
+				expect(res.body.todo.completedAt).toNotExist();
+			})
+			.end(done);		
+		// grab id of second todo item
+		// make patch request
+		// set text to wahtever.
+		// set completed to false
+		// make assertions
+		// check completed is false
+		// check completedAt is null.
+	})
 })
