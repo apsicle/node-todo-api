@@ -14,6 +14,59 @@ beforeEach((done) => {
 	});
 });
 
+describe('GET /todos', () => {
+	it('Should GET all todos', (done) => {
+		var text;
+		supertest(app)
+			.get('/todos')
+			.expect(200)
+			.end((err, res) => {
+				if (err) {
+					return done(err);
+				}
+
+				expect(res.body.todos.length).toBe(3);
+				done();
+			});
+	});
+})
+
+describe('GET /todos/:id', () => {
+	it('Should GET one todo of given id', (done) => {
+		supertest(app)
+			.get(`/todos/${randoID}`)
+			.expect(200)
+			.end((err, res) => {
+				if (err) {
+					return done(err);
+				}
+
+				expect(res.body.todo.text).toBe(todos[0].text);
+				done();
+			});
+	});
+
+	it('Should return a 404 if todo not found', (done) => {
+		supertest(app)
+			.get(`/todos/${new ObjectID()}`)
+			.expect(404)
+			.end((err, res) => {
+				// this .end() function and below are the same
+				if (err) {
+					return done(err);
+				}
+				done();
+			});
+	});
+
+	it('Should return a 400 for non-object / non-valid id', (done) => {
+		supertest(app)
+			.get(`/todos/123`)
+			.expect(400)
+			.end(done);
+	});
+})
+
 describe('POST /todos', () => {
 	it('Should create a new todo', (done) => {
 		var text = 'im gonna use test todo text';
@@ -54,53 +107,44 @@ describe('POST /todos', () => {
 				}).catch((e) => done(e));
 			});
 	});
+});
 
-	it('Should GET all todos', (done) => {
-		var text;
+describe('DELETE /todos/:id', () => {
+	it('Should remove a todo', (done) => {
+		var id = randoID.toHexString();
+
 		supertest(app)
-			.get('/todos')
+			.delete(`/todos/${id}`)
 			.expect(200)
+			.expect((res) => {
+				expect(res.body.todo._id).toBe(id);
+			})
 			.end((err, res) => {
 				if (err) {
 					return done(err);
 				}
-
-				expect(res.body.todos.length).toBe(3);
-				done();
-			});
-	});
-
-	it('Should GET one todo of given id', (done) => {
-		supertest(app)
-			.get(`/todos/${randoID}`)
-			.expect(200)
-			.end((err, res) => {
-				if (err) {
-					return done(err);
-				}
-
-				expect(res.body.todo.text).toBe(todos[0].text);
-				done();
+				Todo.findById(id).then((todo) => {
+					expect(todo).toNotExist();
+					done();
+				}).catch((err) => done(err));
 			});
 	});
 
 	it('Should return a 404 if todo not found', (done) => {
-		supertest(app)
-			.get(`/todos/${new ObjectID()}`)
-			.expect(404)
-			.end((err, res) => {
-				// this .end() function and below are the same
-				if (err) {
-					return done(err);
-				}
-				done();
-			});
-	});
+		var id = new ObjectID().toHexString();
 
-	it('Should return a 404 for non-object / non-valid id', (done) => {
 		supertest(app)
-			.get(`/todo/123`)
+			.delete(`/todos/${id}`)
 			.expect(404)
 			.end(done);
 	});
-});
+
+	it('Should return 400 if object ID is invalid', (done) => {
+		var id = 123;
+
+		supertest(app)
+			.delete('/todos/${id}')
+			.expect(400)
+			.end(done);
+	});
+})
