@@ -55,7 +55,7 @@ UserSchema.methods.generateAuthToken = function() {
 	// this returns a 
 	var user = this;
 	var access = 'auth';
-	var token = jwt.sign({_id: user._id.toHexString, access}, 'mysecretvalue').toString();
+	var token = jwt.sign({_id: user._id.toHexString(), access}, 'mysecretvalue').toString();
 
 	user.tokens.push({
 		access,
@@ -64,6 +64,26 @@ UserSchema.methods.generateAuthToken = function() {
 
 	return user.save().then(() => {
 		return token;
+	});
+};
+
+UserSchema.statics.findByToken = function(token) {
+	// static methods get called with the model class User bound to this.
+	var User = this;
+	var decoded;
+
+	try {
+		decoded = jwt.verify(token, 'mysecretvalue');
+	} catch (err) {
+		//this goes to the catch block in server
+		return Promise.reject('Token could not be determined to be valid');
+	};
+
+	return User.findOne({
+		// quotes are required when you use . properties in a find call
+		'_id': decoded._id,
+		'tokens.token': token,
+		'tokens.access': 'auth'
 	});
 };
 

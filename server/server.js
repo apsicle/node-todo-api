@@ -7,6 +7,7 @@ var {mongoose} = require('./db/mongoose.js');
 var {ObjectID} = require('mongodb');
 var {User} = require('./models/user.js');
 var {Todo} = require('./models/todo.js');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 const port = process.env.PORT || 3000; // this default of 3000 is no longer needed here but keeping for learning's sake.
@@ -120,6 +121,12 @@ app.post('/users', (req, res) => {
 		res.status(400).send(err);
 	});
 });
+
+// authenticate is middleware that authenticates the request
+app.get('/users/me', authenticate, (req, res) => {
+	res.send(req.user);
+});
+
 
 app.listen(port, () => {
 	console.log(`Started on port ${port}`);
