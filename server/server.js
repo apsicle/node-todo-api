@@ -1,14 +1,4 @@
-var env = process.env.NODE_ENV || 'development';
-console.log('env *****', env);
-
-if (env === 'development') {
-	process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
-	process.env.PORT = 3000;
-} else if (env === 'test') {
-	process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
-	process.env.PORT = 3000;
-}
-
+require('./config/config');
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
@@ -110,6 +100,22 @@ app.patch('/todos/:id', (req, res) => {
 		}
 
 		res.send({todo});
+	}).catch((err) => {
+		res.status(400).send(err);
+	});
+});
+
+//stuff in this section. x- prefix on the header means custom header
+//we don't pass user into the first then call because the result of the user.save promise
+//is exactly the same as the user object that we just created.
+app.post('/users', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
+	var user = new User(body);
+
+	user.save().then(() => {
+		return user.generateAuthToken();
+	}).then((token) => {
+		res.header('x-auth', token).send(user);
 	}).catch((err) => {
 		res.status(400).send(err);
 	});
