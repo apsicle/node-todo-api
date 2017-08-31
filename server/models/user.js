@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
 	name: {
@@ -52,11 +53,12 @@ UserSchema.methods.generateAuthToken = function() {
 	// we're creating instance based methods here, and so we need to use the "this" keyword, identifying
 	// the instance of user that we're calling the method from.
 
-	// this returns a 
+	// token is created by jwt.
 	var user = this;
 	var access = 'auth';
 	var token = jwt.sign({_id: user._id.toHexString(), access}, 'mysecretvalue').toString();
 
+	// token is stored in the user object in the tokens array.
 	user.tokens.push({
 		access,
 		token
@@ -73,19 +75,43 @@ UserSchema.statics.findByToken = function(token) {
 	var decoded;
 
 	try {
+		// given a real token, decoded is a user object, with _id and access variables of the original
+		// object, i.e. when you PUT the user object into the database, and called
+		// genAuthToken, you jwt.signed it into this token value, and stored that token value
+		// on the user object, modifying it before you saved it.
+
+		// here, we are decoding that long value using jwt.verify, using a token 
+		// passed in by the user inside the request header.
 		decoded = jwt.verify(token, 'mysecretvalue');
 	} catch (err) {
-		//this goes to the catch block in server
+		//this goes to the catch block in the next level up (authenticate.js, usually)
 		return Promise.reject('Token could not be determined to be valid');
 	};
 
 	return User.findOne({
 		// quotes are required when you use . properties in a find call
+		// here, we are finding the original user object by the decoded _id.
 		'_id': decoded._id,
 		'tokens.token': token,
 		'tokens.access': 'auth'
 	});
 };
+
+UserSchema.pre('save', function(next) {
+	var user = this;
+
+	// isModified is a method that returns true if the property passed in is modified.
+	if (user.isModified('password')) {
+		var salt = bcrypt.genSalt(10, (err, salt) => {
+			bcrypt.hash(user.password, salt, (err, password) => {
+				user.password = password;
+				next();
+			})
+		})
+	} else {
+		next();
+	}
+});
 
 var User = mongoose.model('User', UserSchema);
 

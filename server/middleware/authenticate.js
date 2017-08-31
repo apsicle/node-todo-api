@@ -12,6 +12,8 @@ var authenticate = (req, res, next) => {
 		req.token = token;
 		next();
 	}).catch((err) => {
+		// an error is thrown if the findByToken fails to find a user. Though this could happen for
+		// several reasons, then
 		res.status(401).send(err);
 	});
 }
