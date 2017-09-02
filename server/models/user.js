@@ -69,6 +69,19 @@ UserSchema.methods.generateAuthToken = function() {
 	});
 };
 
+UserSchema.methods.removeToken = function(token) {
+	// remove any object from the user's token array that has the same token as the one passed in
+	var user = this;
+
+	return user.update({
+		$pull: {
+			tokens: {
+				token
+			}
+		}
+	});
+};
+
 UserSchema.statics.findByToken = function(token) {
 	// static methods get called with the model class User bound to this.
 	var User = this;
