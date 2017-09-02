@@ -3,6 +3,7 @@ var {User} = require('./../models/user');
 var authenticate = (req, res, next) => {
 	var token = req.header('x-auth');
 
+	// either get a user back or an error if user can't be found
 	User.findByToken(token).then((user) => {
 		if (!user) {
 			return Promise.reject('user could not be found');
