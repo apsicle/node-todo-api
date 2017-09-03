@@ -93,7 +93,6 @@ app.delete('/todos/:id', authenticate, (req, res) => {
 app.patch('/todos/:id', authenticate, (req, res) => {
 	var id = req.params.id;
 	var body = _.pick(req.body, ['text', 'completed']);
-	body._creator = req.user._creator;
 
 	if (!ObjectID.isValid(id)) {
 		return res.status(400).send();
@@ -117,7 +116,7 @@ app.patch('/todos/:id', authenticate, (req, res) => {
 		if (!todo) {
 			return res.status(404).send();
 		}
-
+		
 		res.send({todo});
 	}).catch((err) => {
 		res.status(400).send(err);
