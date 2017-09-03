@@ -56,7 +56,7 @@ UserSchema.methods.generateAuthToken = function() {
 	// token is created by jwt.
 	var user = this;
 	var access = 'auth';
-	var token = jwt.sign({_id: user._id.toHexString(), access}, 'mysecretvalue').toString();
+	var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
 	// token is stored in the user object in the tokens array.
 	user.tokens.push({
@@ -95,7 +95,7 @@ UserSchema.statics.findByToken = function(token) {
 
 		// here, we are decoding that long value using jwt.verify, using a token 
 		// passed in by the user inside the request header.
-		decoded = jwt.verify(token, 'mysecretvalue');
+		decoded = jwt.verify(token, process.env.JWT_SECRET);
 	} catch (err) {
 		//this goes to the catch block in the next level up (authenticate.js, usually)
 		return Promise.reject('Token could not be determined to be valid');
