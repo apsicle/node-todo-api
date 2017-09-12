@@ -3,6 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
 const bcrypt = require('bcryptjs');
+const hbs = require('hbs');
+const hbsutils = require('hbs-utils')(hbs);
 
 var {mongoose} = require('./db/mongoose.js');
 var {ObjectID} = require('mongodb');
@@ -13,9 +15,21 @@ var {authenticate} = require('./middleware/authenticate');
 var app = express();
 const port = process.env.PORT || 3000; // this default of 3000 is no longer needed here but keeping for learning's sake.
 
+//hbs partials
+hbsutils.registerWatchedPartials(__dirname + '/views/partials');
+
 // bodyParser... passes key-value pairs from the post request into request.body. Q: why
 // isn't this done automatically by express?
 app.use(bodyParser.json());
+app.use(express.static(__dirname + '/public'));
+app.set('view engine', 'hbs');
+app.set('views', __dirname + '/views');
+
+// Web Page routes
+app.get('/', (req, res) => {
+	res.render('login');
+});
+// API routes
 
 app.post('/todos', authenticate, (req, res) => {
 	var todo = new Todo({
@@ -149,6 +163,8 @@ app.get('/users/me', authenticate, (req, res) => {
 
 app.post('/users/login', (req, res) => {
 	var body = _.pick(req.body, ['email', 'password']);
+	console.log(body);
+	console.log(req);
 	User.findByCredentials(body.email, body.password).then((user) => {
 		return user.generateAuthToken().then((token) => {
 			res.header('x-auth', token).send(user);

@@ -6,7 +6,7 @@ var authenticate = (req, res, next) => {
 	// either get a user back or an error if user can't be found
 	User.findByToken(token).then((user) => {
 		if (!user) {
-			return Promise.reject('user could not be found');
+			return Promise.reject('user could not be found with that token');
 		} 
 
 		req.user = user;
